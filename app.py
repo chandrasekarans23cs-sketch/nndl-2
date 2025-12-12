@@ -14,7 +14,7 @@ PTS_IN_HULL = os.path.join(MODEL_DIR, "pts_in_hull.npy")
 if not os.path.exists(CAFFEMODEL):
     st.info("Downloading pretrained model (~123MB)... please wait")
     # Replace with your actual Google Drive direct download link
-    url = "https://drive.google.com/file/d/1-pkEOZKs78Iq5RUJEswONaLIgfBhx-78/view?usp=sharing"
+    url = "https://drive.google.com/uc?export=download&id=1-pkEOZKs78Iq5RUJEswONaLIgfBhx-78"
     urllib.request.urlretrieve(url, CAFFEMODEL)
 
 # --- Load pretrained model ---
