@@ -1,24 +1,53 @@
 import streamlit as st
 import numpy as np
 import cv2
+import os, urllib.request
 
-# Load pretrained model
-net = cv2.dnn.readNetFromCaffe('models/colorization_deploy_v2.prototxt',
-                               'models/colorization_release_v2.caffemodel')
-pts = np.load('models/pts_in_hull.npy')
+# Paths to model files
+MODEL_DIR = "models"
+os.makedirs(MODEL_DIR, exist_ok=True)
+
+PROTOTXT = os.path.join(MODEL_DIR, "colorization_deploy_v2.prototxt")
+CAFFEMODEL = os.path.join(MODEL_DIR, "colorization_release_v2.caffemodel")
+PTS_IN_HULL = os.path.join(MODEL_DIR, "pts_in_hull.npy")
+
+# --- Auto-download if missing ---
+if not os.path.exists(PROTOTXT):
+    urllib.request.urlretrieve(
+        "https://raw.githubusercontent.com/opencv/opencv_contrib/master/modules/dnn/samples/colorization_deploy_v2.prototxt",
+        PROTOTXT
+    )
+
+if not os.path.exists(CAFFEMODEL):
+    urllib.request.urlretrieve(
+        "https://raw.githubusercontent.com/opencv/opencv_contrib/master/modules/dnn/samples/colorization_release_v2.caffemodel",
+        CAFFEMODEL
+    )
+
+if not os.path.exists(PTS_IN_HULL):
+    urllib.request.urlretrieve(
+        "https://raw.githubusercontent.com/opencv/opencv_contrib/master/modules/dnn/samples/pts_in_hull.npy",
+        PTS_IN_HULL
+    )
+
+# --- Load pretrained model ---
+net = cv2.dnn.readNetFromCaffe(PROTOTXT, CAFFEMODEL)
+pts = np.load(PTS_IN_HULL)
 
 # Add cluster centers to the model
-class8 = net.getLayerId('class8_ab')
-conv8 = net.getLayerId('conv8_313_rh')
+class8 = net.getLayerId("class8_ab")
+conv8 = net.getLayerId("conv8_313_rh")
 net.getLayer(class8).blobs = [pts.transpose().reshape(2, 313, 1, 1)]
 net.getLayer(conv8).blobs = [np.full([1, 313], 2.606, dtype="float32")]
 
+# --- Streamlit UI ---
 st.title("🎨 Black & White Image Colorization (Pretrained OpenCV Model)")
 st.write("Upload a grayscale photo and see accurate colorization!")
 
-uploaded_file = st.file_uploader("Upload a grayscale image", type=["jpg", "png", "jpeg"])
+uploaded_file = st.file_uploader("Upload a grayscale image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
+    # Read image
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     gray_img = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
 
