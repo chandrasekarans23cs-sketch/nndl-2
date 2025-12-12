@@ -3,7 +3,6 @@ import numpy as np
 import cv2
 import os, urllib.request
 
-# Paths to model files
 MODEL_DIR = "models"
 os.makedirs(MODEL_DIR, exist_ok=True)
 
@@ -11,24 +10,12 @@ PROTOTXT = os.path.join(MODEL_DIR, "colorization_deploy_v2.prototxt")
 CAFFEMODEL = os.path.join(MODEL_DIR, "colorization_release_v2.caffemodel")
 PTS_IN_HULL = os.path.join(MODEL_DIR, "pts_in_hull.npy")
 
-# --- Auto-download if missing ---
-if not os.path.exists(PROTOTXT):
-    urllib.request.urlretrieve(
-        "https://raw.githubusercontent.com/opencv/opencv_contrib/master/modules/dnn/samples/colorization_deploy_v2.prototxt",
-        PROTOTXT
-    )
-
+# --- Download caffe model from Google Drive if missing ---
 if not os.path.exists(CAFFEMODEL):
-    urllib.request.urlretrieve(
-        "https://raw.githubusercontent.com/opencv/opencv_contrib/master/modules/dnn/samples/colorization_release_v2.caffemodel",
-        CAFFEMODEL
-    )
-
-if not os.path.exists(PTS_IN_HULL):
-    urllib.request.urlretrieve(
-        "https://raw.githubusercontent.com/opencv/opencv_contrib/master/modules/dnn/samples/pts_in_hull.npy",
-        PTS_IN_HULL
-    )
+    st.info("Downloading pretrained model (~123MB)... please wait")
+    # Replace with your actual Google Drive direct download link
+    url = "https://drive.google.com/file/d/1-pkEOZKs78Iq5RUJEswONaLIgfBhx-78/view?usp=sharing"
+    urllib.request.urlretrieve(url, CAFFEMODEL)
 
 # --- Load pretrained model ---
 net = cv2.dnn.readNetFromCaffe(PROTOTXT, CAFFEMODEL)
@@ -47,7 +34,6 @@ st.write("Upload a grayscale photo and see accurate colorization!")
 uploaded_file = st.file_uploader("Upload a grayscale image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    # Read image
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     gray_img = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
 
